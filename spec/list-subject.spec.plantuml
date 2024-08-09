@@ -1,0 +1,71 @@
+@startjson List Cost Representatives
+{
+    "path": "/vendors/vendor-product-cost-representatives",
+    "httpMethod": "GET",
+    "queryParam": {
+        "limit": "number",
+        "offset": "number",
+        "sort": "enum(subjectCode | rating | updatedAt )",
+        "order": "enum(asc | desc)",
+        "semester":"number",
+        "year":"number",
+        "keyword": ["string"],
+        "isBookmark": "boolean"
+    },
+    "response": {
+        "successful": "boolean",
+        "errorCode": "string",
+        "message": "string",
+        "httpStatus": "number",
+        "data": {
+            "metaData": {
+                "*total": "number",
+                "*count": "number",
+                "*limit": "number",
+                "*offset": "number"
+            },
+            "items": [{
+                "*id": "number",
+                "*credit": "number",
+                "section": [{
+                    "section_id": "number",
+                    "datetime": "string",
+                    "location": "string",
+                    "author": "string"
+                }],
+                "description": "string",
+                "catagory": "string",
+                "rating": "number",
+                "midterm_exam_date": "string",
+                "final_exam_date": "string",
+                "*createdAt": "string",
+                "*updatedAt": "string",
+                "*createdBy": "string",
+                "*updatedBy": "string"
+            }]
+        }
+    },
+    "errorCode": [
+        {
+            "code": "00",
+            "message": "Success",
+            "httpStatus": "200"
+        },
+        {
+            "code": "03",
+            "message": "Server Error",
+            "httpStatus": "500"
+        },
+        {
+            "code": "06",
+            "message": "Invalid Data",
+            "httpStatus": "400"
+        },
+        {
+            "code": "10",
+            "message": "Unauthorized",
+            "httpStatus": "401"
+        }
+    ]
+}
+@endjson
