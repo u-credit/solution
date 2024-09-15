@@ -1,0 +1,31 @@
+@startuml Course Page
+actor User
+participant CoursePage
+participant WebAPI
+database UCredit
+database RegKMITL
+
+activate User
+User -> CoursePage ++ : Open course page
+CoursePage -> WebAPI ++ : Get course data
+WebAPI -> RegKMITL ++ : Query
+return Course data
+return Course data
+return Show course data
+User -> CoursePage ++ : Search course
+CoursePage -> WebAPI ++ : Get course data
+alt sort by rating
+    WebAPI -> UCredit ++ : Query sorted by rating
+    Return Filtered courses sorted by rating
+    WebAPI -> RegKMITL ++ : Query
+    return Combined course data (joined result sorted by rating)
+    deactivate UCredit
+else without sort by rating
+    WebAPI -> RegKMITL ++ : Query
+    return Filtered course data
+end
+WebAPI --> CoursePage -- : Filtered course data
+CoursePage --> User -- : Show filtered course data
+
+
+@enduml
