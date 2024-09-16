@@ -1,0 +1,59 @@
+@startuml Transcript Page
+
+actor User
+participant "Transcript Page" as Frontend
+participant "Web API" as API
+database "Reg DB" as Reg
+
+' return department and course info
+' return department and course info
+' return department and course info
+
+' alt Modify department and course
+'     User -> Frontend ++ : Send modified data (if any)
+'     return department and course info
+' end
+
+User -> Frontend ++ : Upload transcript
+Frontend -> API ++ : Send transcript
+API -> Reg ++ : Extract data and query department and course info
+return department and course info
+return department and course info
+return department and course info
+
+alt Recheck or modify department and course info
+    User -> Frontend ++ : Modify or confirm department and course info
+    Frontend -> API ++ : Send modified or confirmed data
+    API -> Reg ++ : Update department and course info (if modified)
+    return updated department and course info
+    return updated department and course info
+    return updated department and course info
+end
+
+User -> Frontend ++ : Confirm department and course info
+
+Frontend -> API ++ : Request auto-calculated credits for subjects
+API -> Reg ++ : Query Subject Credit
+return subject credit info
+API -> API : Auto-calculated credits for subjects
+
+alt have some subjects can't auto calculated
+    return subjects that can't calculated
+    return subjects that can't calculated
+    User -> Frontend ++ : Enter manual credit calculation for specific subjects
+    Frontend -> API ++ : Manual credit calculation for specific subjects
+end
+
+API -> API : Calculated credits for all subjects
+return Summary calculated credits
+return Display credit summary to user
+
+alt User modify calculated
+    User -> Frontend ++ : Enter manual credit calculation for specific subjects
+    Frontend -> API ++ : Manual credit calculation for specific subjects
+    API -> API : Calcilated credits again
+    return Summary calculated credits
+    return Display credit summary to user
+end
+
+@enduml
