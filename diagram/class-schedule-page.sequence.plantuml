@@ -1,0 +1,79 @@
+@startuml Class Schedule Page
+actor User
+participant ClassSchedulePage
+participant WebAPI
+database UCredit
+database RegKMITL
+
+User -> ClassSchedulePage ++ : Open schedule table page
+
+ClassSchedulePage -> WebAPI ++ : Get user curriculum data
+WebAPI -> RegKMITL ++ : Get user curriculum data
+return User curriculum data
+return User curriculum data
+
+ClassSchedulePage -> WebAPI ++ : Get schedule data
+WebAPI -> UCredit ++ : Get schedule data
+return Schedule data
+return Schedule data
+
+ClassSchedulePage -> WebAPI ++ : Get user transcript data
+WebAPI -> UCredit ++ : Get user transcript data
+return User transcript data
+return User transcript data
+
+ClassSchedulePage -> WebAPI ++ : Get user bookmarked data
+WebAPI -> UCredit ++ : Get user bookmarked data
+return User bookmarked data
+return User bookmarked data
+
+ClassSchedulePage -> ClassSchedulePage ++-- : Calculate Remaining Credits
+return Show schedule page
+
+User -> ClassSchedulePage ++ : Click download schedule table
+ClassSchedulePage -> ClassSchedulePage ++ : Convert current table to PNG using html2canvas
+ClassSchedulePage --> User -- : Download PNG file
+deactivate ClassSchedulePage
+
+User -> ClassSchedulePage ++ : Click show exam schedule button
+ClassSchedulePage -> WebAPI ++ : Get exam schedule data
+WebAPI -> RegKMITL ++ : Get exam schedule data
+return Exam schedule data
+return Exam schedule data
+return Show exam schedule page
+
+User -> ClassSchedulePage ++ : Select semester
+ClassSchedulePage -> WebAPI ++ : Get schedule data of selected semester
+WebAPI -> RegKMITL ++ : Get schedule data of selected semester
+return Selected semester schedule data
+return Selected semester schedule data
+ClassSchedulePage -> ClassSchedulePage ++-- : Calculate Remaining Credits
+return Show selected semester schedule
+
+alt Click show course
+    User -> ClassSchedulePage ++ : Toggle to show course in schedule
+    ClassSchedulePage -> WebAPI ++ : Update schedule data with new course
+    WebAPI -> UCredit ++ : Add new course to schedule
+    return Course detail data
+    return Course detail data
+    return Show new course in schedule
+else Click hide course
+    User -> ClassSchedulePage ++ : Toggle to hide course in schedule
+    ClassSchedulePage -> WebAPI ++ :  Update schedule data with remove course
+    WebAPI -> UCredit ++ : Remove course from schedule
+    return Course detail data
+    return Course detail data
+    return Hide selected course in schedule
+end
+
+User -> ClassSchedulePage ++ : Click recommend course button
+ClassSchedulePage -> WebAPI ++ : Get recommended course data based on user curriculum
+WebAPI -> UCredit ++ : Query course
+return course data
+return Recommended course data
+return Show recommended course page
+
+
+
+@enduml
+

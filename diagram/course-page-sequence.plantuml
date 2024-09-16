@@ -1,11 +1,11 @@
 @startuml Course Page
 actor User
 participant CoursePage
+participant CourseDetailPage
 participant WebAPI
 database UCredit
 database RegKMITL
 
-activate User
 User -> CoursePage ++ : Open course page
 CoursePage -> WebAPI ++ : Get course data
 WebAPI -> RegKMITL ++ : Query
@@ -27,5 +27,29 @@ end
 WebAPI --> CoursePage -- : Filtered course data
 CoursePage --> User -- : Show filtered course data
 
+User -> CoursePage ++ : Click course name to view full detail
+CoursePage -> CourseDetailPage --++ : Redirect to course detail page
+CourseDetailPage -> WebAPI ++ : Get course detail
+WebAPI -> RegKMITL ++ : Get course detail data
+return Course detail data
+WebAPI -> UCredit ++ : Get course detail data
+return Course detail data
+return Course detail data
+CourseDetailPage --> User -- : Show course detail
 
+User -> CoursePage ++ : Click bookmark button
+CoursePage -> WebAPI ++ : New bookmark course
+WebAPI -> UCredit ++ : Create bookmark course
+return Create bookmark course response
+return Create bookmark course response
+CoursePage --> User -- : List of bookmarked courses updated
+
+User -> CoursePage ++ : Click show bookmarked course button
+CoursePage -> CoursePage ++ : Open bookmarked modal
+CoursePage -> WebAPI ++ : Get bookmarked courses
+WebAPI -> UCredit ++ : Query bookmarked courses
+return List of bookmarked courses
+return List of bookmarked courses
+CoursePage --> User -- : Show bookmarked courses
+deactivate CoursePage
 @enduml
