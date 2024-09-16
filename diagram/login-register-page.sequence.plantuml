@@ -1,0 +1,31 @@
+@startuml Login_Register_Page
+actor User
+participant LoginPage
+participant WebAPI
+participant UCredit
+
+User -> LoginPage ++ : Open login page
+LoginPage --> User: Display google oauth button
+
+User -> LoginPage : Click google oauth button
+LoginPage -> WebAPI ++ : Request google oauth
+WebAPI --> User: Redirect to google oauth
+
+User -> GoogleOAuth ++: Provide google credentials
+GoogleOAuth -> WebAPI -- : Send google credentials
+WebAPI -> UCredit ++ : Check user
+return User Data
+
+alt New User - Register
+    WebAPI -> UCredit ++ : Create new user
+    UCredit --> WebAPI -- : User data
+    WebAPI --> LoginPage: Access token, User role, Is new user flag
+    LoginPage --> User: Redirect to setup account page
+else Existing User - Login
+    WebAPI --> LoginPage: Access token, User role, Is new user flag
+    deactivate WebAPI
+    LoginPage --> User: Redirect to course page
+    deactivate LoginPage
+end
+
+@enduml
