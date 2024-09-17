@@ -9,28 +9,36 @@ database RegKMITL
 activate User
 User -> CoursePage ++ : Open course page
 CoursePage -> WebAPI ++ : Get course data
-WebAPI -> RegKMITL ++ : Query subject_id details
+WebAPI -> RegKMITL ++ : Query subject details
 return Course data
 return Show subject details
 
 User -> CoursePage ++ : Select subject card
 CoursePage -> ReviewPage ++ : Navigate to review page
-ReviewPage -> WebAPI ++ : Get reviews for subject
-WebAPI -> UCredit ++ : Query reviews by subject_id
-return List of reviews
-return Show reviews
+ReviewPage -> WebAPI ++ : Get reviews and average rating for subject
+WebAPI -> UCredit ++ : Query reviews 
+WebAPI -> UCredit ++ : Query average rating 
 
-User -> ReviewPage ++ : Create new review
-ReviewPage -> WebAPI ++ : Submit review data
-WebAPI -> UCredit ++ : Save new review
-return Success message
-
-alt show average rating
-    WebAPI -> UCredit ++ : Query average rating by subject_id
+alt Reviews found
+    return List of reviews
     return Average rating
+else No reviews found
+    return No reviews
+    return No rating
 end
 
-WebAPI --> ReviewPage -- : Return result
-ReviewPage --> User -- : Show reviews and rating
+WebAPI --> ReviewPage -- : Return reviews and average rating
+ReviewPage --> User -- : Show reviews and average rating
+
+User -> ReviewPage ++ : Create new review
+
+alt User inputs valid data
+    ReviewPage -> WebAPI ++ : Submit review data
+    WebAPI -> UCredit ++ : Save new review
+    return Success message
+    ReviewPage --> User -- : Show success message
+else User inputs invalid data
+    ReviewPage --> User -- : Show error (missing data)
+end
 
 @enduml
