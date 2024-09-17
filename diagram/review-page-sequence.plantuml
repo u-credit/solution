@@ -1,0 +1,36 @@
+@startuml Review Page
+actor User
+participant CoursePage
+participant ReviewPage
+participant WebAPI
+database UCredit
+database RegKMITL
+
+activate User
+User -> CoursePage ++ : Open course page
+CoursePage -> WebAPI ++ : Get course data
+WebAPI -> RegKMITL ++ : Query subject_id details
+return Course data
+return Show subject details
+
+User -> CoursePage ++ : Select subject card
+CoursePage -> ReviewPage ++ : Navigate to review page
+ReviewPage -> WebAPI ++ : Get reviews for subject
+WebAPI -> UCredit ++ : Query reviews by subject_id
+return List of reviews
+return Show reviews
+
+User -> ReviewPage ++ : Create new review
+ReviewPage -> WebAPI ++ : Submit review data
+WebAPI -> UCredit ++ : Save new review
+return Success message
+
+alt show average rating
+    WebAPI -> UCredit ++ : Query average rating by subject_id
+    return Average rating
+end
+
+WebAPI --> ReviewPage -- : Return result
+ReviewPage --> User -- : Show reviews and rating
+
+@enduml
