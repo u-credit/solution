@@ -3,7 +3,7 @@
 actor User
 participant "Transcript Page" as Frontend
 participant "Web API" as API
-database "Reg DB" as Reg
+database "RegKMITL" as Reg
 
 ' return department and course info
 ' return department and course info
@@ -38,8 +38,8 @@ return subject credit info
 API -> API : Auto-calculated credits for subjects
 
 alt have some subjects can't auto calculated
-    return subjects that can't calculated
-    return subjects that can't calculated
+    return subject that can't be calculated
+    return subject that can't be calculated
     User -> Frontend ++ : Enter manual credit calculation for specific subjects
     Frontend -> API ++ : Manual credit calculation for specific subjects
 end
@@ -51,7 +51,7 @@ return Display credit summary to user
 alt User modify calculated
     User -> Frontend ++ : Enter manual credit calculation for specific subjects
     Frontend -> API ++ : Manual credit calculation for specific subjects
-    API -> API : Calcilated credits again
+    API -> API : Calculated credits again
     return Summary calculated credits
     return Display credit summary to user
 end
