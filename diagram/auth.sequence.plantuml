@@ -1,0 +1,131 @@
+@startuml
+
+actor User
+participant "Frontend" as Frontend
+participant "AuthController" as AuthCtrl
+participant "AuthService" as AuthSvc
+participant "UserService" as UserSvc
+participant "UserRepository" as UserRepo
+participant "RefreshTokenRepository" as TokenRepo
+participant "JwtService" as JwtSvc
+participant "GoogleStrategy" as GoogleStrat
+participant "u-credit Database" as UCreditDB
+
+== Google Authentication Flow ==
+User -> Frontend: Click "Login with Google"
+activate Frontend
+Frontend -> AuthCtrl: GET /auth/google
+activate AuthCtrl
+AuthCtrl -> GoogleStrat: Use GoogleAuthGuard
+activate GoogleStrat
+GoogleStrat -> GoogleStrat: Redirect to Google
+GoogleStrat -> AuthCtrl: Return user profile
+deactivate GoogleStrat
+AuthCtrl -> AuthSvc: login(user, req)
+activate AuthSvc
+AuthSvc -> UserRepo: findOne(user.email)
+activate UserRepo
+UserRepo -> UCreditDB: Query user by email
+activate UCreditDB
+UCreditDB --> UserRepo: Return user data
+deactivate UCreditDB
+deactivate UserRepo
+alt User not found
+    AuthSvc -> UserSvc: create(user)
+    activate UserSvc
+    UserSvc -> UserRepo: createUser(user)
+    activate UserRepo
+    UserRepo -> UCreditDB: Insert new user
+    activate UCreditDB
+    UCreditDB --> UserRepo: User created
+    deactivate UCreditDB
+    deactivate UserRepo
+    UserSvc -> AuthSvc: Return new user
+    deactivate UserSvc
+end
+AuthSvc -> TokenRepo: Upsert refresh token
+activate TokenRepo
+TokenRepo -> UCreditDB: Store refresh token
+activate UCreditDB
+UCreditDB --> TokenRepo: Token stored
+deactivate UCreditDB
+deactivate TokenRepo
+AuthSvc -> JwtSvc: Generate access token
+activate JwtSvc
+JwtSvc --> AuthSvc: Return access token
+deactivate JwtSvc
+AuthSvc -> JwtSvc: Generate refresh token
+activate JwtSvc
+JwtSvc --> AuthSvc: Return refresh token
+deactivate JwtSvc
+AuthSvc --> AuthCtrl: Return tokens
+deactivate AuthSvc
+AuthCtrl -> Frontend: Set cookies & Redirect to frontend
+Frontend -> User: Authentication successful
+
+deactivate AuthCtrl
+
+deactivate Frontend
+
+== Refresh Access Token ==
+User -> Frontend: Request new access token
+activate Frontend
+Frontend -> AuthCtrl: POST /auth/accessToken
+activate AuthCtrl
+AuthCtrl -> AuthSvc: refreshAccessToken(refreshToken, req)
+activate AuthSvc
+AuthSvc -> TokenRepo: Find refresh token
+activate TokenRepo
+TokenRepo -> UCreditDB: Query stored refresh token
+activate UCreditDB
+UCreditDB --> TokenRepo: Return token data
+activate AuthSvc
+alt Token invalid/expired
+    AuthSvc -> AuthCtrl: Throw UnauthorizedException
+    deactivate TokenRepo
+    deactivate UCreditDB
+    deactivate AuthSvc
+    AuthCtrl -> Frontend: Return error response
+    deactivate AuthCtrl
+    Frontend -> User: Show error message
+    deactivate Frontend
+else
+    deactivate UCreditDB
+    deactivate TokenRepo
+    AuthSvc -> JwtSvc: Generate new access token
+    activate JwtSvc
+    JwtSvc --> AuthSvc: Return new access token
+    deactivate JwtSvc
+    AuthSvc --> AuthCtrl: Return new access token
+    deactivate AuthSvc
+    AuthCtrl -> Frontend: Set new access token in cookies
+    Frontend -> User: Token refreshed
+    deactivate AuthCtrl
+    deactivate Frontend
+end
+
+== Logout Flow ==
+User -> Frontend: Click "Logout"
+activate Frontend
+Frontend -> AuthCtrl: GET /auth/logout
+activate AuthCtrl
+AuthCtrl -> AuthSvc: logout(refreshToken, res)
+activate AuthSvc
+AuthSvc -> TokenRepo: Delete refresh token
+activate TokenRepo
+TokenRepo -> UCreditDB: Remove refresh token
+activate UCreditDB
+UCreditDB --> TokenRepo: Token deleted
+    deactivate UCreditDB
+    deactivate TokenRepo
+AuthSvc -> AuthCtrl: Clear cookies
+AuthCtrl -> Frontend: Logout successful
+Frontend -> User: Logged out
+
+deactivate AuthSvc
+
+deactivate AuthCtrl
+
+deactivate Frontend
+
+@enduml
