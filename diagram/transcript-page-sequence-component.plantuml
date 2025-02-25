@@ -1,0 +1,91 @@
+@startuml Transcript Page
+actor User
+participant "Transcript\nPage" as Frontend
+participant "Transcript\nController" as Controller
+participant "Transcript\nService" as Service
+participant "User\nRepository" as UserRepository
+participant "Curriculum\nRepository" as CurriculumRepository
+participant "Subject\nRepository" as SubjectRepository
+participant "Transcript\nRepository" as TranscriptRepository
+participant "Transcript\nSubject\nRepository" as TranscriptSubjectRepository
+database "RegistrarDB" as Reg
+database "UCreditDB" as Ucredit
+
+== Get Transcript ==
+User -> Frontend ++ : Open Transcript Page
+Frontend -> Controller ++ : GET /transcript (JWT Auth)
+Controller -> Service ++ : Calculate transcript for user
+Service -> TranscriptRepository ++ : Get transcript by user ID
+TranscriptRepository -> Ucredit ++ : Fetch transcript data
+Ucredit --> TranscriptRepository -- : Return transcript data
+TranscriptRepository --> Service -- : Return transcript data
+
+opt Transcript exists
+    Service -> TranscriptSubjectRepository ++ : Get subjects linked to transcript
+    TranscriptSubjectRepository -> Ucredit ++ : Fetch subject transcript data
+    Ucredit --> TranscriptSubjectRepository -- : Return subject transcript data
+    TranscriptSubjectRepository --> Service -- : Return subject transcript data
+
+    Service -> SubjectRepository ++ : Get subject details
+    SubjectRepository -> Reg ++ : Fetch details for transcript subjects
+    Reg --> SubjectRepository -- : Return subject details
+    SubjectRepository --> Service -- : Return subject details
+
+    Service -> UserRepository ++ : Get user curriculum details
+    UserRepository -> Ucredit ++ : Fetch user's faculty and department info
+    Ucredit --> UserRepository -- : Return curriculum details
+    UserRepository --> Service -- : Return curriculum details
+
+    Service -> Service ++ : Process and calculate transcript summary
+    Service --> Controller -- : Return summarized transcript data
+    Controller --> Frontend -- : Return summarized transcript data
+    Frontend --> User -- : Display transcript summary page
+else No transcript found
+    Service --> Controller -- : Return transcript not found
+    Controller --> Frontend -- : Return transcript not found
+    Frontend --> User -- : Display upload transcript page
+end
+
+== Upload Transcript Page ==
+User -> Frontend ++ : Upload transcript file/nand selected curriculum group
+Frontend -> Controller ++ : POST /transcript/calculate
+Controller -> Service ++ : Process uploaded transcript file
+Service -> Service : Extract subject data from transcript file
+
+Service -> CurriculumRepository ++ : Get required credits based on curriculum
+CurriculumRepository -> Reg ++ : Fetch required credit details
+Reg --> CurriculumRepository -- : Return required credit details
+CurriculumRepository --> Service -- : Return required credit details
+
+Service -> Service : Analyze and categorize transcript subjects
+Service --> Controller -- : Return categorized subjects\nand unmatched subjects
+Controller --> Frontend -- : Return categorized subjects\nand unmatched subjects
+
+== Recheck Transcript Page ==
+alt Have unmatch subjects
+    Frontend --> User -- : Display unmatch subjects
+    User -> Frontend ++ : Categorized unmatch subjects
+end
+
+Frontend -> Controller ++ : POST /transcript/create
+Controller -> Service ++ : Save processed transcript data
+Service -> UserRepository ++ : Update user's curriculum information
+UserRepository -> Ucredit ++ : Store updated curriculum details
+Ucredit --> UserRepository -- : Confirm update success
+UserRepository --> Service -- : Confirm update success
+
+Service -> TranscriptRepository ++ : Save new transcript record
+TranscriptRepository -> Ucredit ++ : Store transcript data
+Ucredit --> TranscriptRepository -- : Confirm transcript creation
+TranscriptRepository --> Service -- : Confirm transcript creation
+
+Service -> TranscriptSubjectRepository ++ : Save subjects linked to transcript
+TranscriptSubjectRepository -> Ucredit ++ : Store subject data for transcript
+Ucredit --> TranscriptSubjectRepository -- : Confirm subject data storage
+TranscriptSubjectRepository --> Service -- : Confirm subject data storage
+
+Service --> Controller -- : Confirm transcript and subject creation
+Controller --> Frontend -- : Confirm transcript and subject creation
+Frontend --> User -- : Display transcript summary page
+
+@enduml
