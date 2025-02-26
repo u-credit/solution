@@ -36,28 +36,28 @@ opt Transcript exists
     Ucredit --> UserRepository -- : Return curriculum details
     UserRepository --> Service -- : Return curriculum details
 
-    Service -> Service ++ : Process and calculate transcript summary
-    Service --> Controller -- : Return summarized transcript data
-    Controller --> Frontend -- : Return summarized transcript data
-    Frontend --> User -- : Display transcript summary page
+    Service -> Service ++ : Process and\ncalculate transcript summary
+    Service --> Controller -- : Return summarized\ntranscript data
+    Controller --> Frontend -- : Return summarized\ntranscript data
+    Frontend --> User -- : Display\ntranscript summary page
 else No transcript found
     Service --> Controller -- : Return transcript not found
     Controller --> Frontend -- : Return transcript not found
-    Frontend --> User -- : Display upload transcript page
+    Frontend --> User -- : Display\nupload transcript page
 end
 
 == Upload Transcript Page ==
-User -> Frontend ++ : Upload transcript file/nand selected curriculum group
+User -> Frontend ++ : Upload transcript file\nand selected curriculum group
 Frontend -> Controller ++ : POST /transcript/calculate
-Controller -> Service ++ : Process uploaded transcript file
-Service -> Service : Extract subject data from transcript file
+Controller -> Service ++ : Process uploaded\ntranscript file
+Service -> Service : Extract subject data\nfrom transcript file
 
-Service -> CurriculumRepository ++ : Get required credits based on curriculum
+Service -> CurriculumRepository ++ : Get required credits\nbased on curriculum
 CurriculumRepository -> Reg ++ : Fetch required credit details
 Reg --> CurriculumRepository -- : Return required credit details
 CurriculumRepository --> Service -- : Return required credit details
 
-Service -> Service : Analyze and categorize transcript subjects
+Service -> Service : Analyze and categorize\ntranscript subjects
 Service --> Controller -- : Return categorized subjects\nand unmatched subjects
 Controller --> Frontend -- : Return categorized subjects\nand unmatched subjects
 
@@ -68,8 +68,8 @@ alt Have unmatch subjects
 end
 
 Frontend -> Controller ++ : POST /transcript/create
-Controller -> Service ++ : Save processed transcript data
-Service -> UserRepository ++ : Update user's curriculum information
+Controller -> Service ++ : Save processed\ntranscript data
+Service -> UserRepository ++ : Update user's\ncurriculum information
 UserRepository -> Ucredit ++ : Store updated curriculum details
 Ucredit --> UserRepository -- : Confirm update success
 UserRepository --> Service -- : Confirm update success
@@ -84,8 +84,8 @@ TranscriptSubjectRepository -> Ucredit ++ : Store subject data for transcript
 Ucredit --> TranscriptSubjectRepository -- : Confirm subject data storage
 TranscriptSubjectRepository --> Service -- : Confirm subject data storage
 
-Service --> Controller -- : Confirm transcript and subject creation
-Controller --> Frontend -- : Confirm transcript and subject creation
-Frontend --> User -- : Display transcript summary page
+Service --> Controller -- : Confirm transcript\nand subject creation
+Controller --> Frontend -- : Confirm transcript\nand subject creation
+Frontend --> User -- : Display\ntranscript summary page
 
 @enduml
