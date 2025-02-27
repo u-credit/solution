@@ -17,53 +17,55 @@ Frontend -> Controller ++ : GET /transcript (JWT Auth)
 Controller -> Service ++ : Calculate transcript for user
 Service -> TranscriptRepository ++ : Get transcript by user ID
 TranscriptRepository -> Ucredit ++ : Fetch transcript data
-Ucredit --> TranscriptRepository -- : Return transcript data
-TranscriptRepository --> Service -- : Return transcript data
+Ucredit -->> TranscriptRepository -- : Return transcript data
+TranscriptRepository -->> Service -- : Return transcript data
 
 opt Transcript exists
     Service -> TranscriptSubjectRepository ++ : Get subjects linked to transcript
     TranscriptSubjectRepository -> Ucredit ++ : Fetch subject transcript data
-    Ucredit --> TranscriptSubjectRepository -- : Return subject transcript data
-    TranscriptSubjectRepository --> Service -- : Return subject transcript data
+    Ucredit -->> TranscriptSubjectRepository -- : Return subject transcript data
+    TranscriptSubjectRepository -->> Service -- : Return subject transcript data
 
     Service -> SubjectRepository ++ : Get subject details
     SubjectRepository -> Reg ++ : Fetch details for transcript subjects
-    Reg --> SubjectRepository -- : Return subject details
-    SubjectRepository --> Service -- : Return subject details
+    Reg -->> SubjectRepository -- : Return subject details
+    SubjectRepository -->> Service -- : Return subject details
 
     Service -> UserRepository ++ : Get user curriculum details
     UserRepository -> Ucredit ++ : Fetch user's faculty and department info
-    Ucredit --> UserRepository -- : Return curriculum details
-    UserRepository --> Service -- : Return curriculum details
+    Ucredit -->> UserRepository -- : Return curriculum details
+    UserRepository -->> Service -- : Return curriculum details
 
     Service -> Service ++ : Process and\ncalculate transcript summary
-    Service --> Controller -- : Return summarized\ntranscript data
-    Controller --> Frontend -- : Return summarized\ntranscript data
-    Frontend --> User -- : Display\ntranscript summary page
+    Service -->> Controller -- : Return summarized\ntranscript data
+    Controller -->> Frontend -- : Return summarized\ntranscript data
+    Frontend -->> User -- : Display\ntranscript summary page
 else No transcript found
-    Service --> Controller -- : Return transcript not found
-    Controller --> Frontend -- : Return transcript not found
-    Frontend --> User -- : Display\nupload transcript page
+    Service -->> Controller -- : Return transcript not found
+    Controller -->> Frontend -- : Return transcript not found
+    Frontend -->> User -- : Display\nupload transcript page
 end
 
 == Upload Transcript Page ==
 User -> Frontend ++ : Upload transcript file\nand selected curriculum group
 Frontend -> Controller ++ : POST /transcript/calculate
 Controller -> Service ++ : Process uploaded\ntranscript file
-Service -> Service : Extract subject data\nfrom transcript file
+Service -> Service ++ : Extract subject data\nfrom transcript file
+deactivate
 
 Service -> CurriculumRepository ++ : Get required credits\nbased on curriculum
 CurriculumRepository -> Reg ++ : Fetch required credit details
-Reg --> CurriculumRepository -- : Return required credit details
-CurriculumRepository --> Service -- : Return required credit details
+Reg -->> CurriculumRepository -- : Return required credit details
+CurriculumRepository -->> Service -- : Return required credit details
 
-Service -> Service : Analyze and categorize\ntranscript subjects
-Service --> Controller -- : Return categorized subjects\nand unmatched subjects
-Controller --> Frontend -- : Return categorized subjects\nand unmatched subjects
+Service -> Service ++ : Analyze and categorize\ntranscript subjects
+deactivate
+Service -->> Controller -- : Return categorized subjects\nand unmatched subjects
+Controller -->> Frontend -- : Return categorized subjects\nand unmatched subjects
 
 == Recheck Transcript Page ==
 alt Have unmatch subjects
-    Frontend --> User -- : Display unmatch subjects
+    Frontend -->> User -- : Display unmatch subjects
     User -> Frontend ++ : Categorized unmatch subjects
 end
 
@@ -71,21 +73,21 @@ Frontend -> Controller ++ : POST /transcript/create
 Controller -> Service ++ : Save processed\ntranscript data
 Service -> UserRepository ++ : Update user's\ncurriculum information
 UserRepository -> Ucredit ++ : Store updated curriculum details
-Ucredit --> UserRepository -- : Confirm update success
-UserRepository --> Service -- : Confirm update success
+Ucredit -->> UserRepository -- : Confirm update success
+UserRepository -->> Service -- : Confirm update success
 
 Service -> TranscriptRepository ++ : Save new transcript record
 TranscriptRepository -> Ucredit ++ : Store transcript data
-Ucredit --> TranscriptRepository -- : Confirm transcript creation
-TranscriptRepository --> Service -- : Confirm transcript creation
+Ucredit -->> TranscriptRepository -- : Confirm transcript creation
+TranscriptRepository -->> Service -- : Confirm transcript creation
 
 Service -> TranscriptSubjectRepository ++ : Save subjects linked to transcript
 TranscriptSubjectRepository -> Ucredit ++ : Store subject data for transcript
-Ucredit --> TranscriptSubjectRepository -- : Confirm subject data storage
-TranscriptSubjectRepository --> Service -- : Confirm subject data storage
+Ucredit -->> TranscriptSubjectRepository -- : Confirm subject data storage
+TranscriptSubjectRepository -->> Service -- : Confirm subject data storage
 
-Service --> Controller -- : Confirm transcript\nand subject creation
-Controller --> Frontend -- : Confirm transcript\nand subject creation
-Frontend --> User -- : Display\ntranscript summary page
+Service -->> Controller -- : Confirm transcript\nand subject creation
+Controller -->> Frontend -- : Confirm transcript\nand subject creation
+Frontend -->> User -- : Display\ntranscript summary page
 
 @enduml
